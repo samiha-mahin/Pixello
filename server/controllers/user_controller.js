@@ -117,7 +117,7 @@ export const login = async (req, res) => {
   }
 };
 
-export const logout = async ( _ , res) => {
+export const logout = async (_, res) => {
   try {
     return res.status(200).cookie("token", "", { maxAge: 0 }).json({
       message: "Logout successful",
@@ -146,12 +146,42 @@ export const getProfile = async (req, res) => {
 };
 
 export const editProfile = async (req, res) => {
-    try {
-        const userId = req.id;
-        const { bio, gender } = req.body;
-        const profilePicture = req.file; //Take the entire uploaded file object from req.file and store it in a variable called profilePicture.(multer will do this)
-        
-    } catch (error) {
-        
+  try {
+    const userId = req.id;
+    const { bio, gender } = req.body;
+    const profilePicture = req.file; //Take the entire uploaded file object from req.file and store it in a variable called profilePicture.(multer will do this)
+    let cloudResponse;
+
+    if (profilePicture) {
+      const fileUri = getDataUri(profilePicture); //Convert the image to base64 format using the getDataUri function.
+      cloudResponse = await cloudinary.uploader.upload(fileUri);
     }
-}
+
+    const user = await User.findById(userId).select("-password"); //Find the user but exclude the password field from the result
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found.",
+        success: false,
+      });
+    }
+
+    if (bio) user.bio = bio;
+    if (gender) user.gender = gender;
+    if (profilePicture) user.profilePicture = cloudResponse.secure_url;
+
+    await user.save();
+
+    return res.status(200).json({
+      message: "Profile updated successfully.",
+      success: true,
+      user,
+    });
+  } catch (error) {
+
+    return res.status(500).json({
+      message: "Profile update failed.",
+      success: false,
+    });
+  }
+
+};
