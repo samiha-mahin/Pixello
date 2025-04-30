@@ -88,28 +88,27 @@ export const login = async (req, res) => {
     // Promise.all ensures all async operations complete before moving on
 
     user = {
-        _id: user._id,
-        username: user.username,
-        email: user.email,
-        profilePicture: user.profilePicture,
-        bio: user.bio,
-        followers: user.followers,
-        following: user.following,
-        posts: populatedPosts
-    }
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      profilePicture: user.profilePicture,
+      bio: user.bio,
+      followers: user.followers,
+      following: user.following,
+      posts: populatedPosts,
+    };
     return res
-    .status(200)
-    .cookie("token", token, {
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      httpsOnly: true,
-      sameSite: "strict",
-    })
-    .json({
-      message: `Welcome back ${user.username}`,
-      user,
-      success: true,
-    });
-
+      .status(200)
+      .cookie("token", token, {
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        httpsOnly: true,
+        sameSite: "strict",
+      })
+      .json({
+        message: `Welcome back ${user.username}`,
+        user,
+        success: true,
+      });
   } catch (error) {
     return res.status(500).json({
       message: "Login failed",
@@ -119,14 +118,29 @@ export const login = async (req, res) => {
 };
 
 export const logout = async (req, res) => {
-    try {
-      return res.status(200).cookie("token", "", { maxAge: 0 }).json({
-        message: "Logout successful",
-        success: true,
-      });
-    } catch (error) {
-      return res.status(500).json({
-        message: "Logout failed",
-      });
-    }
-  };
+  try {
+    return res.status(200).cookie("token", "", { maxAge: 0 }).json({
+      message: "Logout successful",
+      success: true,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Logout failed",
+    });
+  }
+};
+
+export const getProfile = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    let user = await User.findById(userId)
+      .populate({ path: "posts", createdAt: -1 })
+      .populate("bookmarks");
+    return res.status(200).json({
+      user,
+      success: true,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
