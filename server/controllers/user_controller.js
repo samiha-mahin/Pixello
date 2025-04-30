@@ -185,3 +185,22 @@ export const editProfile = async (req, res) => {
   }
 
 };
+export const getSuggestedUsers = async (req, res) => {
+    try {
+        const suggestedUsers = await User.find({ _id: { $ne: req.id } }).select("-password");
+        
+        //$ne = "not equal".This means: “Find all users whose _id is NOT equal to the current user’s ID.” So it excludes the currently logged-in user from the list. .select("-password"): Do not include the password field in the results for security.
+
+        if (!suggestedUsers) {
+            return res.status(400).json({
+                message: 'Currently do not have any users',
+            })
+        };
+        return res.status(200).json({
+            success: true,
+            users: suggestedUsers
+        })
+    } catch (error) {
+        console.log(error);
+    }
+};
