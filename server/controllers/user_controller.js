@@ -117,7 +117,7 @@ export const login = async (req, res) => {
   }
 };
 
-export const logout = async (req, res) => {
+export const logout = async ( _ , res) => {
   try {
     return res.status(200).cookie("token", "", { maxAge: 0 }).json({
       message: "Logout successful",
@@ -144,3 +144,14 @@ export const getProfile = async (req, res) => {
     console.log(error);
   }
 };
+
+export const editProfile = async (req, res) => {
+    try {
+        const userId = req.id;
+        const { bio, gender } = req.body;
+        const profilePicture = req.file; //Take the entire uploaded file object from req.file and store it in a variable called profilePicture.(multer will do this)
+        
+    } catch (error) {
+        
+    }
+}
