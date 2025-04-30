@@ -3,6 +3,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import connectDB from './utils/db.js';
+import userRoute from "./routes/user_route.js";
 
 dotenv.config();
 const app = express();
@@ -17,6 +18,8 @@ const corsOptions = {
   credentials: true, // Ensures cookies are sent
 };
 app.use(cors(corsOptions));
+
+app.use("/api/v1/user", userRoute);
 
 const PORT = process.env.PORT || 3000;
  app.listen (PORT,()=>{

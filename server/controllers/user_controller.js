@@ -1,5 +1,5 @@
 import { User } from "../models/user_model.js";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import getDataUri from "../utils/datauri.js";
 import cloudinary from "../utils/cloudinary.js";
@@ -241,7 +241,7 @@ export const followOrUnfollow = async (req, res) => {
         message: "Unfollowed successfully",
         success: true,
       });
-      
+
     } else {
       // Follow logic
       await Promise.all([
