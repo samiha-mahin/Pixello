@@ -177,30 +177,83 @@ export const editProfile = async (req, res) => {
       user,
     });
   } catch (error) {
-
     return res.status(500).json({
       message: "Profile update failed.",
       success: false,
     });
   }
-
 };
 export const getSuggestedUsers = async (req, res) => {
-    try {
-        const suggestedUsers = await User.find({ _id: { $ne: req.id } }).select("-password");
-        
-        //$ne = "not equal".This means: “Find all users whose _id is NOT equal to the current user’s ID.” So it excludes the currently logged-in user from the list. .select("-password"): Do not include the password field in the results for security.
+  try {
+    const suggestedUsers = await User.find({ _id: { $ne: req.id } }).select(
+      "-password"
+    );
 
-        if (!suggestedUsers) {
-            return res.status(400).json({
-                message: 'Currently do not have any users',
-            })
-        };
-        return res.status(200).json({
-            success: true,
-            users: suggestedUsers
-        })
-    } catch (error) {
-        console.log(error);
+    //$ne = "not equal".This means: “Find all users whose _id is NOT equal to the current user’s ID.” So it excludes the currently logged-in user from the list. .select("-password"): Do not include the password field in the results for security.
+
+    if (!suggestedUsers) {
+      return res.status(400).json({
+        message: "Currently do not have any users",
+      });
     }
+    return res.status(200).json({
+      success: true,
+      users: suggestedUsers,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+export const followOrUnfollow = async (req, res) => {
+  try {
+    const currentUserId = req.id; // The one who is trying to follow/unfollow
+    const targetUserId = req.params.id; // The user to be followed/unfollowed
+
+    // Prevent users from following or unfollowing themselves
+    if (currentUserId === targetUserId) {
+      return res.status(400).json({
+        message: "You cannot follow/unfollow yourself",
+        success: false,
+      });
+    }
+
+    const user = await User.findById(currentUserId);
+    const targetUser = await User.findById(targetUserId);
+
+    // If either user doesn't exist
+    if (!user || !targetUser) {
+      return res.status(400).json({
+        message: "User not found",
+        success: false,
+      });
+    }
+
+    // Check if the current user is already following the target user
+    const isFollowing = user.following.includes(targetUserId);
+
+    if (isFollowing) {
+      // Unfollow logic
+      await Promise.all([
+        User.updateOne({ _id: currentUserId },{ $pull: { following: targetUserId }}),
+        User.updateOne({ _id: targetUserId }, { $pull: { followers: currentUserId }}),
+      ]);
+      return res.status(200).json({
+        message: "Unfollowed successfully",
+        success: true,
+      });
+      
+    } else {
+      // Follow logic
+      await Promise.all([
+        User.updateOne({ _id: currentUserId }, { $push: { following: targetUserId }}),
+        User.updateOne({ _id: targetUserId }, { $push: { followers: currentUserId }}),
+      ]);
+      return res.status(200).json({
+        message: "Followed successfully",
+        success: true,
+      });
+    }
+  } catch (error) {
+    console.log(error);
+  }
 };
