@@ -166,7 +166,7 @@ export const editProfile = async (req, res) => {
     }
 
     if (bio) user.bio = bio;
-    if (gender) user.gender = gender;
+    if (gender) user.gender = gender.trim();
     if (profilePicture) user.profilePicture = cloudResponse.secure_url;
 
     await user.save();
@@ -179,8 +179,9 @@ export const editProfile = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       message: "Profile update failed.",
+      error: error.message,
       success: false,
-    });
+    });    
   }
 };
 export const getSuggestedUsers = async (req, res) => {
