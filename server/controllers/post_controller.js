@@ -3,6 +3,7 @@ import cloudinary from "../utils/cloudinary.js";
 import { Post } from "../models/post_model.js";
 import { User } from "../models/user_model.js";
 import { Comment } from "../models/comment_model.js";
+import path from "path";
 
 // Add new post
 export const addNewPost = async (req, res) => {
@@ -53,17 +54,16 @@ export const addNewPost = async (req, res) => {
 // Get all posts
 export const getAllPost = async (req, res) => {
     try {
-        const posts = await Post.find().sort({ createdAt: -1 })
-            .populate({ path: 'author', select: 'username profilePicture' })
+        const posts = await Post.find().sort({ createdAt: -1 }) // newest posts first
+            .populate({ path: 'author', select: 'username profilePicture' }) // populate author details
             .populate({
                 path: 'comments',
-                sort: { createdAt: -1 },
+                sort: { createdAt: -1 }, // newest comments first
                 populate: {
                     path: 'author',
                     select: 'username profilePicture'
-                }
+                } // populate author of comments
             });
-        return res.status(200).json({ posts, success: true });
     } catch (error) {
         return res.status(500).json({
             message: "getAllPost failed.",
@@ -109,7 +109,7 @@ export const likePost = async (req, res) => {
         const post = await Post.findById(postId);
         if (!post) return res.status(404).json({ message: 'Post not found', success: false });
 
-        await post.updateOne({ $addToSet: { likes: userId } });
+        await post.updateOne({ $addToSet: { likes: userId } }); //$addToSet is like saying: “Add user123 to the likes array only if not already there.” It prevents duplicate likes. So even if you spam the like button, your ID is only added once. 
         await post.save();
 
         return res.status(200).json({ message: 'Post liked', success: true });
