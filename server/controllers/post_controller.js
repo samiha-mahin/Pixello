@@ -33,7 +33,7 @@ export const addNewPost = async (req, res) => {
             await user.save();
         }
 
-        await post.populate({ path: 'author', select: '-password' });
+        await post.populate({ path: 'author', select: '-password' }); //Adds full author details (like username and profile) into the post object
 
         return res.status(201).json({
             message: 'New post added',
@@ -65,7 +65,11 @@ export const getAllPost = async (req, res) => {
             });
         return res.status(200).json({ posts, success: true });
     } catch (error) {
-        console.log(error);
+        return res.status(500).json({
+            message: "getAllPost failed.",
+            error: error.message,
+            success: false,
+          });  
     }
 };
 
@@ -89,7 +93,11 @@ export const getUserPost = async (req, res) => {
             });
         return res.status(200).json({ posts, success: true });
     } catch (error) {
-        console.log(error);
+        return res.status(500).json({
+            message: "getUserPost failed.",
+            error: error.message,
+            success: false,
+          });    
     }
 };
 
@@ -106,7 +114,11 @@ export const likePost = async (req, res) => {
 
         return res.status(200).json({ message: 'Post liked', success: true });
     } catch (error) {
-        console.log(error);
+        return res.status(500).json({
+            message: "likePost failed.",
+            error: error.message,
+            success: false,
+          }); 
     }
 };
 
@@ -123,7 +135,11 @@ export const dislikePost = async (req, res) => {
 
         return res.status(200).json({ message: 'Post disliked', success: true });
     } catch (error) {
-        console.log(error);
+        return res.status(500).json({
+            message: "dislikePost failed.",
+            error: error.message,
+            success: false,
+          }); 
     }
 };
 
@@ -150,7 +166,11 @@ export const addComment = async (req, res) => {
 
         return res.status(201).json({ message: 'Comment added', comment, success: true });
     } catch (error) {
-        console.log(error);
+        return res.status(500).json({
+            message: "comment failed.",
+            error: error.message,
+            success: false,
+          }); 
     }
 };
 
@@ -164,7 +184,11 @@ export const getCommentsOfPost = async (req, res) => {
 
         return res.status(200).json({ success: true, comments });
     } catch (error) {
-        console.log(error);
+        return res.status(500).json({
+            message: "getCommentsOfPost failed.",
+            error: error.message,
+            success: false,
+          }); 
     }
 };
 
@@ -190,7 +214,11 @@ export const deletePost = async (req, res) => {
 
         return res.status(200).json({ success: true, message: 'Post deleted' });
     } catch (error) {
-        console.log(error);
+        return res.status(500).json({
+            message: "deletePost failed.",
+            error: error.message,
+            success: false,
+          }); 
     }
 };
 
@@ -213,6 +241,10 @@ export const bookmarkPost = async (req, res) => {
             return res.status(200).json({ type: 'saved', message: 'Post bookmarked', success: true });
         }
     } catch (error) {
-        console.log(error);
+        return res.status(500).json({
+            message: "bookmarkPost failed.",
+            error: error.message,
+            success: false,
+          }); 
     }
 };
