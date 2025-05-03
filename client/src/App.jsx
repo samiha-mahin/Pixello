@@ -1,10 +1,16 @@
 import React from 'react'
-import { Button } from './components/ui/button'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import Signup from './components/Signup'
 
 const App = () => {
   return (
-    <div className='bg-amber-600'>App
-    <Button className='bg-amber-300'>Hello</Button></div>
+   <>
+   <BrowserRouter>
+   <Routes>
+    <Route path="/signup" element={<Signup />} /> 
+   </Routes>
+   </BrowserRouter>
+   </>
   )
 }
 
