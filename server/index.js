@@ -16,7 +16,7 @@ app.use(express.urlencoded({extended:true})); //Parses URL-encoded payloads (e.g
 app.use(cookieParser()); //Parses cookies from incoming HTTP requests
 
 const corsOptions = {
-    origin: ' http://localhost:5173/',
+    origin: ' http://localhost:5173',
   credentials: true, // Ensures cookies are sent
 };
 app.use(cors(corsOptions));
