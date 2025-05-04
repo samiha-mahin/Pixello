@@ -42,63 +42,70 @@ const Signup = () => {
         }
        } catch (error) {
         console.log(error);
-        toast.error(error.response.data.message);
+        toast.error(error?.response?.data?.message || "Signup failed");
        } finally {
         setLoading(false);
        }
-        
     }
 
   return (
-    <div className='flex items-center w-screen h-screen justify-center'>
-    <form onSubmit={signupHandler} className='shadow-lg flex flex-col gap-5 p-8'>
-        <div className='my-4'>
-            <h1 className='text-center font-bold text-xl'>LOGO</h1>
-            <p className='text-sm text-center'>Signup to see photos & videos from your friends</p>
+    <div className='flex items-center justify-center min-h-screen bg-gray-100 px-4'>
+      <form 
+        onSubmit={signupHandler} 
+        className='w-full max-w-md bg-white p-6 rounded-xl shadow-md flex flex-col gap-5'
+      >
+        <div className='text-center mb-4'>
+            <h1 className='font-bold text-2xl'>LOGO</h1>
+            <p className='text-sm text-gray-500 mt-1'>Signup to see photos & videos from your friends</p>
         </div>
+
         <div>
-            <span className='font-medium'>Username</span>
+            <label className='font-medium text-sm text-gray-700'>Username</label>
             <Input
                 type="text"
                 name="username"
                 value={input.username}
                 onChange={changeEventHandler}
-                className="focus-visible:ring-transparent my-2"
+                className="focus-visible:ring-transparent mt-1"
             />
         </div>
+
         <div>
-            <span className='font-medium'>Email</span>
+            <label className='font-medium text-sm text-gray-700'>Email</label>
             <Input
                 type="email"
                 name="email"
                 value={input.email}
                 onChange={changeEventHandler}
-                className="focus-visible:ring-transparent my-2"
+                className="focus-visible:ring-transparent mt-1"
             />
         </div>
+
         <div>
-            <span className='font-medium'>Password</span>
+            <label className='font-medium text-sm text-gray-700'>Password</label>
             <Input
                 type="password"
                 name="password"
                 value={input.password}
                 onChange={changeEventHandler}
-                className="focus-visible:ring-transparent my-2"
+                className="focus-visible:ring-transparent mt-1"
             />
         </div>
-        {
-            loading ? (
-                <Button>
-                    <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-                    Please wait
-                </Button>
-            ) : (
-                <Button type='submit'>Signup</Button>
-            )
-        }
-        <span className='text-center'>Already have an account? <Link to="/login" className='text-blue-600'>Login</Link></span>
-    </form>
-</div>
+
+        {loading ? (
+            <Button disabled>
+                <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                Please wait
+            </Button>
+        ) : (
+            <Button type='submit' className='w-full'>Signup</Button>
+        )}
+
+        <span className='text-center text-sm text-gray-600'>
+            Already have an account? <Link to="/login" className='text-blue-600'>Login</Link>
+        </span>
+      </form>
+    </div>
   )
 }
 
