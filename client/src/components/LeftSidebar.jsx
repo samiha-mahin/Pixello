@@ -7,7 +7,7 @@ import {
   Search,
   TrendingUp,
 } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import {
   Popover,
@@ -19,9 +19,15 @@ import axios from "axios";
 import { USER_API } from "@/utils/constant";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useDispatch, useSelector } from "react-redux";
+import CreatePost from "./CreatePost";
+import { setAuthUser } from "@/redux/authSlice";
 
 const LeftSidebar = () => {
   const navigate = useNavigate();
+  const {user} = useSelector(store => store.auth);
+  const dispatch =  useDispatch();
+  const [open, setOpen] = useState(false)
 
   const logoutHandler = async () => {
     try {
@@ -29,6 +35,7 @@ const LeftSidebar = () => {
         withCredentials: true,
       });
       if (res.data.success) {
+        dispatch(setAuthUser(null));
         navigate("/login");
         toast.success(res.data.message);
       }
@@ -40,8 +47,9 @@ const LeftSidebar = () => {
   const sidebarHandler = (textType) => {
     if (textType === "Logout") {
       logoutHandler();
+    } else if (textType === "Create") {
+        setOpen(true);
     }
-    // Handle navigation (e.g., navigate("/explore"))
   };
 
   const sidebarItems = [
@@ -55,7 +63,7 @@ const LeftSidebar = () => {
       icon: (
         <Avatar className="w-5 h-5">
           <AvatarImage
-            src="https://vz.cnwimg.com/wp-content/uploads/2023/12/Mikey-Madison.jpg?x95892"
+            src={user?.profilePicture}
             alt="@shadcn"
           />
           <AvatarFallback>CN</AvatarFallback>
@@ -105,7 +113,7 @@ const LeftSidebar = () => {
             <div className="flex flex-col items-center justify-center cursor-pointer">
               <Avatar className="w-6 h-6">
                 <AvatarImage
-                  src="https://vz.cnwimg.com/wp-content/uploads/2023/12/Mikey-Madison.jpg?x95892"
+                  src={user?.profilePicture}
                   alt="user"
                 />
                 <AvatarFallback>CN</AvatarFallback>
@@ -136,6 +144,7 @@ const LeftSidebar = () => {
           </PopoverContent>
         </Popover>
       </div>
+      <CreatePost open={open} setOpen={setOpen} />
     </>
   );
 };
