@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Input } from './ui/input'
 import { Button } from './ui/button'
 import axios from 'axios'
@@ -6,6 +6,8 @@ import { toast } from 'sonner'
 import { Link, useNavigate } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
 import { USER_API } from '@/utils/constant' // Make sure this is defined properly
+import { useDispatch, useSelector } from 'react-redux'
+import { setAuthUser } from '@/redux/authSlice'
 
 const Login = () => {
     const [input, setInput] = useState({
@@ -13,8 +15,9 @@ const Login = () => {
         password: ""
     });
     const [loading, setLoading] = useState(false);
-
+    const {user} = useSelector(store => store.auth);
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     const changeEventHandler = (e) => {
         setInput({ ...input, [e.target.name]: e.target.value });
@@ -31,6 +34,7 @@ const Login = () => {
                 withCredentials: true
             });
             if (res.data.success) {
+                dispatch(setAuthUser(res.data.user));
                 toast.success(res.data.message);
                 navigate("/");
                 setInput({
@@ -45,6 +49,11 @@ const Login = () => {
             setLoading(false);
         }
     }
+    useEffect(()=>{
+        if(user){
+            navigate("/");
+        }
+    },[])
 
     return (
         <div className='flex items-center justify-center min-h-screen bg-gray-100 px-4'>
