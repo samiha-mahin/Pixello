@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Input } from './ui/input'
 import { Button } from './ui/button'
 import { Link, useNavigate } from 'react-router-dom'
@@ -6,6 +6,7 @@ import { USER_API } from '@/utils/constant'
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
 import axios from 'axios'
+import { useSelector } from 'react-redux'
 
 const Signup = () => {
 
@@ -15,6 +16,7 @@ const Signup = () => {
         password: ""
     })
     const [loading, setLoading] = useState(false);
+    const { user } = useSelector(store => store.auth);
     const navigate = useNavigate();
 
     const changeEventHandler = (e) => {
@@ -47,6 +49,12 @@ const Signup = () => {
         setLoading(false);
        }
     }
+
+    useEffect(()=>{
+        if(user){
+            navigate("/");
+        }
+    },[])
 
   return (
     <div className='flex items-center justify-center min-h-screen bg-gray-100 px-4'>
