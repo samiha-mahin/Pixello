@@ -22,10 +22,12 @@ import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
 import CreatePost from "./CreatePost";
 import { setAuthUser } from "@/redux/authSlice";
+import { setPosts, setSelectedPost } from "@/redux/postSlice";
 
 const LeftSidebar = () => {
   const navigate = useNavigate();
   const {user} = useSelector(store => store.auth);
+  const {likeNotification} = useSelector(store => store.realTimeNotification);
   const dispatch =  useDispatch();
   const [open, setOpen] = useState(false)
 
@@ -36,6 +38,8 @@ const LeftSidebar = () => {
       });
       if (res.data.success) {
         dispatch(setAuthUser(null));
+        dispatch(setSelectedPost(null));
+        dispatch(setPosts([]));
         navigate("/login");
         toast.success(res.data.message);
       }
@@ -49,6 +53,12 @@ const LeftSidebar = () => {
       logoutHandler();
     } else if (textType === "Create") {
         setOpen(true);
+    } else if (textType === "Profile") {
+      navigate(`profile/${user._id}`);
+    } else if (textType === "Messages") {
+      navigate("/chat");
+    } else if (textType === "Home") {
+      navigate("/");
     }
   };
 
