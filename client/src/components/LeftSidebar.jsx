@@ -137,7 +137,7 @@ const LeftSidebar = () => {
       </div>
 
       {/* Mobile Bottom Navbar */}
-      <div className="md:hidden fixed bottom-0 left-0 w-full bg-white border-t flex justify-around items-center h-14 z-50">
+      <div className="md:hidden fixed bottom-0 w-full bg-white border-t flex justify-around items-center h-14 z-50">
         {sidebarItems.map((item, index) => {
           if (item.text === "Messages" || item.text === "Explore" || item.text === "Logout")
             return null;
