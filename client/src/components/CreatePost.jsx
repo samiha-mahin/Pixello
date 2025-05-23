@@ -1,10 +1,12 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import { Dialog, DialogContent, DialogHeader } from './ui/dialog'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { useSelector } from 'react-redux';
+import { Textarea } from './ui/textarea';
 
 
 const CreatePost = ({open, setOpen}) => {
+  const imageRef = useRef();
   const {user} = useSelector(store => store.auth);
   return (
     <Dialog open={open}>
@@ -20,6 +22,9 @@ const CreatePost = ({open, setOpen}) => {
             {/* <span className='text-gray-600 text-xs'>Bio here...</span> */}
           </div>
         </div>
+        <Textarea>
+
+        </Textarea>
       </DialogContent>
     </Dialog>
   )
