@@ -8,6 +8,9 @@ import axios from 'axios';
 import { Post_API } from '@/utils/constant';
 import { setPosts } from '@/redux/postSlice';
 import { toast } from 'sonner';
+import { Button } from './ui/button';
+import { Loader2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 
 const CreatePost = ({open, setOpen}) => {
@@ -71,7 +74,7 @@ const CreatePost = ({open, setOpen}) => {
             {/* <span className='text-gray-600 text-xs'>Bio here...</span> */}
           </div>
         </div>
-        <Textarea>
+        <Textarea value={caption} onChange={(e) => setCaption(e.target.value)} placeholder='Write a caption...' className='focus-visible:ring-transparent border-none' rows={5}/>
           {
             imagePreview && (
               <div className='w-full h-64 flex items-center justify-center'>
@@ -79,7 +82,20 @@ const CreatePost = ({open, setOpen}) => {
               </div>
             )
           }
-        </Textarea>
+          <input ref={imageRef} type='file' className='hidden' onChange={fileChangeHandler} />
+          <Link onClick={()=>imageRef.current.click()} className='w-fit mx-auto text-black hover:text-blue-500 transition-colors duration-200'>Upload</Link>
+          {
+           imagePreview && (
+            loading ? (
+              <Button>
+                <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                Please wait
+              </Button>
+            ) : (
+              <Button onClick={createPostHandler} type="submit" className="w-full">Post</Button>
+            )
+           )
+          }
       </DialogContent>
     </Dialog>
   )
