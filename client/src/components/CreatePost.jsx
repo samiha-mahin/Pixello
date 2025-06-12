@@ -4,6 +4,10 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { useDispatch, useSelector } from 'react-redux';
 import { Textarea } from './ui/textarea';
 import { readFileAsDataURL } from '@/lib/utils';
+import axios from 'axios';
+import { Post_API } from '@/utils/constant';
+import { setPosts } from '@/redux/postSlice';
+import { toast } from 'sonner';
 
 
 const CreatePost = ({open, setOpen}) => {
@@ -23,6 +27,33 @@ const CreatePost = ({open, setOpen}) => {
       setFile(file);                //Saves the file in state
       const dataUrl = await readFileAsDataURL(file); //This converts the file into a Data URL 
       setImagePreview(dataUrl);  //Shows that image as a preview
+    }
+  }
+  
+  const createPostHandler = async(e) => {
+    const formData = new FormData();
+    formData.append("caption", caption);
+    if(imagePreview) formData.append("image",file);
+    try {
+      setLoading(true);
+      const res = await axios.post(`${Post_API}/addpost`,formData,{
+        withCredentials: true,
+        headers: {
+          "Content-Type": "multipart/form-data"
+        }
+      });
+      if(res.data.success){
+        dispatch(setPosts([res.data.post, ...posts]));
+        toast.success(res.data.message);
+        setOpen(false);
+      }
+    } catch (error) {
+      toast.error(error.response.data.message);
+    } finally {
+      setLoading(false);
+      setFile("");
+      setCaption("");
+      setImagePreview("");
     }
   }
 
