@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader } from './ui/dialog'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { useDispatch, useSelector } from 'react-redux';
 import { Textarea } from './ui/textarea';
+import { readFileAsDataURL } from '@/lib/utils';
 
 
 const CreatePost = ({open, setOpen}) => {
@@ -16,8 +17,15 @@ const CreatePost = ({open, setOpen}) => {
   const {posts} = useSelector(store => store.post);
   const dispatch = useDispatch();
 
+  const fileChangeHandler = async(e) =>{
+    const file = e.target.files?.[0]; //Gets the selected file
+    if (file){                       //Checks if a file exists
+      setFile(file);                //Saves the file in state
+      const dataUrl = await readFileAsDataURL(file); //This converts the file into a Data URL 
+      setImagePreview(dataUrl);  //Shows that image as a preview
+    }
+  }
 
-  
   return (
     <Dialog open={open}>
       <DialogContent  onInteractOutside={()=> setOpen(false)}>
