@@ -72,7 +72,13 @@ const CreatePost = ({open, setOpen}) => {
           </div>
         </div>
         <Textarea>
-
+          {
+            imagePreview && (
+              <div className='w-full h-64 flex items-center justify-center'>
+                <img src={imagePreview} alt="preview_img" className='object-cover h-full w-full rounded-md'/>
+              </div>
+            )
+          }
         </Textarea>
       </DialogContent>
     </Dialog>
