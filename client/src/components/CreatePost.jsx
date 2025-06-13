@@ -1,5 +1,5 @@
-import React, { useRef, useState } from 'react'
-import { Dialog, DialogContent, DialogHeader } from './ui/dialog'
+import React, { useRef, useState } from 'react';
+import { Dialog, DialogContent, DialogHeader } from './ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { useDispatch, useSelector } from 'react-redux';
 import { Textarea } from './ui/textarea';
@@ -18,56 +18,53 @@ const CreatePost = ({ open, setOpen }) => {
   const [caption, setCaption] = useState("");
   const [imagePreview, setImagePreview] = useState("");
   const [loading, setLoading] = useState(false);
-  const [aiLoading, setAiLoading] = useState(false); // New state for AI
-
+  const [aiLoading, setAiLoading] = useState(false); // NEW
   const { user } = useSelector(store => store.auth);
   const { posts } = useSelector(store => store.post);
   const dispatch = useDispatch();
 
-  // 🔹 Call AI API to suggest caption based on image
   const generateAICaption = async () => {
-  try {
-    setAiLoading(true);
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer YOUR_OPENAI_API_KEY",
-      },
-      body: JSON.stringify({
-        model: "gpt-3.5-turbo",
-        messages: [
-          {
-            role: "system",
-            content: "You are a helpful assistant.",
-          },
-          {
-            role: "user",
-            content: "Give me a caption for a photo of a sunset on the beach.",
-          }
-        ],
-        max_tokens: 50,
-        temperature: 0.7,
-      }),
-    });
+    try {
+      setAiLoading(true);
+      const res = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: "gpt-3.5-turbo",
+          messages: [
+            {
+              role: "system",
+              content: "You are an assistant that writes fun and creative captions for Instagram photos."
+            },
+            {
+              role: "user",
+              content: "Suggest a fun, catchy, creative caption for an Instagram photo."
+            }
+          ],
+          max_tokens: 50,
+          temperature: 0.8
+        })
+      });
 
-    const data = await res.json();
-    console.log("OpenAI test response:", data);
-    const caption = data?.choices?.[0]?.message?.content?.trim();
-    if (caption) {
-      setCaption(caption);
-      toast.success("Caption generated!");
-    } else {
-      throw new Error("No caption returned");
+      const data = await res.json();
+      const aiCaption = data?.choices?.[0]?.message?.content?.trim();
+
+      if (aiCaption) {
+        setCaption(aiCaption);
+        toast.success("AI Caption Generated!");
+      } else {
+        throw new Error("No caption returned");
+      }
+    } catch (error) {
+      console.error("AI Caption Error:", error);
+      toast.error("Failed to generate caption");
+    } finally {
+      setAiLoading(false);
     }
-  } catch (error) {
-    console.error("AI Caption Error:", error);
-    toast.error("Failed to generate caption.");
-  } finally {
-    setAiLoading(false);
-  }
-};
-
+  };
 
   const fileChangeHandler = async (e) => {
     const file = e.target.files?.[0];
@@ -75,7 +72,7 @@ const CreatePost = ({ open, setOpen }) => {
       setFile(file);
       const dataUrl = await readFileAsDataURL(file);
       setImagePreview(dataUrl);
-      generateAICaption(dataUrl); // 🔹 Call AI caption suggestion
+      generateAICaption(); // GENERATE CAPTION ON IMAGE UPLOAD
     }
   };
 
@@ -119,7 +116,6 @@ const CreatePost = ({ open, setOpen }) => {
             <h1 className='font-semibold text-xs'>{user?.username}</h1>
           </div>
         </div>
-
         <Textarea
           value={caption}
           onChange={(e) => setCaption(e.target.value)}
@@ -127,9 +123,8 @@ const CreatePost = ({ open, setOpen }) => {
           className='focus-visible:ring-transparent border-none'
           rows={5}
         />
-
         {aiLoading && (
-          <p className="text-xs text-blue-500 italic">Suggesting caption with AI...</p>
+          <p className='text-sm text-blue-500 mt-1'>Generating caption...</p>
         )}
 
         {imagePreview && (
