@@ -53,7 +53,9 @@ const CreatePost = ({ open, setOpen }) => {
     try {
       setAiLoading(true);
 
-      const model = genAI.getGenerativeModel({ model: "models/gemini-2.0-flash" });
+      const model = genAI.getGenerativeModel({
+        model: "models/gemini-2.0-flash",
+      });
 
       let prompt = tonePrompts[selectedTone];
       if (selectedTone === "Informative") {
@@ -125,14 +127,22 @@ const CreatePost = ({ open, setOpen }) => {
 
   return (
     <Dialog open={open}>
-      <DialogContent onInteractOutside={() => setOpen(false)}>
-        <DialogHeader className="text-center font-semibold">Create Post</DialogHeader>
+      <DialogContent
+        onInteractOutside={() => setOpen(false)}
+        className="max-h-[80vh] overflow-y-auto mx-auto"
+        style={{ minWidth: "320px" }}
+      >
+        <DialogHeader className="text-center font-semibold">
+          Create Post
+        </DialogHeader>
 
         {/* User Info */}
         <div className="flex items-center gap-3 mb-3">
           <Avatar>
             <AvatarImage src={user?.profilePicture} alt="" />
-            <AvatarFallback>{user?.username?.charAt(0)?.toUpperCase() || "U"}</AvatarFallback>
+            <AvatarFallback>
+              {user?.username?.charAt(0)?.toUpperCase() || "U"}
+            </AvatarFallback>
           </Avatar>
           <div>
             <h1 className="font-semibold text-xs">{user?.username}</h1>
@@ -160,7 +170,7 @@ const CreatePost = ({ open, setOpen }) => {
               <Textarea
                 value={imageDescription}
                 onChange={(e) => setImageDescription(e.target.value)}
-                placeholder="E.g. A steaming cup of coffee on a wooden table, cozy morning light"
+                placeholder="Describe your image..."
                 rows={3}
                 className="mt-1"
               />
@@ -171,7 +181,8 @@ const CreatePost = ({ open, setOpen }) => {
               >
                 {aiLoading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating...
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />{" "}
+                    Generating...
                   </>
                 ) : (
                   "Generate Caption"
@@ -194,7 +205,8 @@ const CreatePost = ({ open, setOpen }) => {
             <Button onClick={generateAICaption} disabled={aiLoading}>
               {aiLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating...
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />{" "}
+                  Generating...
                 </>
               ) : (
                 "Generate AI Caption"
@@ -206,12 +218,21 @@ const CreatePost = ({ open, setOpen }) => {
         {/* Image Preview */}
         {imagePreview && (
           <div className="w-full h-64 flex items-center justify-center bg-gray-100 rounded-md overflow-hidden mt-4 mb-4">
-            <img src={imagePreview} alt="preview_img" className="h-full w-full object-contain" />
+            <img
+              src={imagePreview}
+              alt="preview_img"
+              className="h-full w-full object-contain"
+            />
           </div>
         )}
 
         {/* Image Upload */}
-        <input ref={imageRef} type="file" className="hidden" onChange={fileChangeHandler} />
+        <input
+          ref={imageRef}
+          type="file"
+          className="hidden"
+          onChange={fileChangeHandler}
+        />
         <Link
           onClick={() => imageRef.current.click()}
           className="w-fit mx-auto text-black hover:text-blue-500 transition-colors duration-200"
@@ -220,8 +241,8 @@ const CreatePost = ({ open, setOpen }) => {
         </Link>
 
         {/* Post Button */}
-        {imagePreview && (
-          loading ? (
+        {imagePreview &&
+          (loading ? (
             <Button disabled className="w-full mt-4">
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Please wait
@@ -230,8 +251,7 @@ const CreatePost = ({ open, setOpen }) => {
             <Button onClick={createPostHandler} className="w-full mt-4">
               Post
             </Button>
-          )
-        )}
+          ))}
       </DialogContent>
     </Dialog>
   );
