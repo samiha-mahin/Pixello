@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { GoogleGenerativeAI } from "@google/generative-ai"; // Ensure this is installed: npm install @google/generative-ai
 
 const CreatePost = ({ open, setOpen }) => {
   const imageRef = useRef();
@@ -18,53 +19,46 @@ const CreatePost = ({ open, setOpen }) => {
   const [caption, setCaption] = useState("");
   const [imagePreview, setImagePreview] = useState("");
   const [loading, setLoading] = useState(false);
-  const [aiLoading, setAiLoading] = useState(false); // NEW
+  const [aiLoading, setAiLoading] = useState(false);
   const { user } = useSelector(store => store.auth);
   const { posts } = useSelector(store => store.post);
   const dispatch = useDispatch();
 
+  // Initialize Google GenAI client
+  // The baseUrl is the default, but explicitly setting it helps confirm it's not the issue.
+  // The core problem usually lies with the API_KEY itself or the Google Cloud Project configuration.
+  const ai = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY, {
+    baseUrl: "https://generativelanguage.googleapis.com"
+  });
+
   const generateAICaption = async () => {
     try {
       setAiLoading(true);
-      const res = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          model: "gpt-3.5-turbo",
-          messages: [
-            {
-              role: "system",
-              content: "You are an assistant that writes fun and creative captions for Instagram photos."
-            },
-            {
-              role: "user",
-              content: "Suggest a fun, catchy, creative caption for an Instagram photo."
-            }
-          ],
-          max_tokens: 50,
-          temperature: 0.8
-        })
-      });
 
-      const data = await res.json();
-      const aiCaption = data?.choices?.[0]?.message?.content?.trim();
+      // This is the correct way to specify gemini-pro.
+      // The 404 indicates a problem outside this code line.
+      const model = ai.getGenerativeModel({ model: "gemini-pro" });
+
+      const result = await model.generateContent([
+        "Suggest a fun, catchy, creative caption for an Instagram photo."
+      ]);
+
+      const aiCaption = result.response?.text();
 
       if (aiCaption) {
-        setCaption(aiCaption);
+        setCaption(aiCaption.trim());
         toast.success("AI Caption Generated!");
       } else {
         throw new Error("No caption returned");
       }
-    } catch (error) {
-      console.error("AI Caption Error:", error);
+    } catch (err) {
+      console.error("AI Caption Error:", err);
       toast.error("Failed to generate caption");
     } finally {
       setAiLoading(false);
     }
   };
+
 
   const fileChangeHandler = async (e) => {
     const file = e.target.files?.[0];
@@ -72,7 +66,8 @@ const CreatePost = ({ open, setOpen }) => {
       setFile(file);
       const dataUrl = await readFileAsDataURL(file);
       setImagePreview(dataUrl);
-      generateAICaption(); // GENERATE CAPTION ON IMAGE UPLOAD
+      // Trigger AI caption generation when an image is selected
+      generateAICaption();
     }
   };
 
