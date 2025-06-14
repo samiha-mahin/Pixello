@@ -5,7 +5,6 @@ import { Textarea } from "./ui/textarea";
 import { Button } from "./ui/button";
 import { Loader2 } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
-import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import axios from "axios";
 import { readFileAsDataURL } from "@/lib/utils";
@@ -20,14 +19,14 @@ const CreatePost = ({ open, setOpen }) => {
   const { posts } = useSelector((store) => store.post);
 
   const [file, setFile] = useState(null);
-  const [caption, setCaption] = useState("");
   const [imagePreview, setImagePreview] = useState("");
+  const [caption, setCaption] = useState("");
+  const [imageDescription, setImageDescription] = useState("");
+  const [selectedTone, setSelectedTone] = useState("Poetic");
   const [loading, setLoading] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
 
   const tones = ["Funny", "Poetic", "Informative", "Emotional"];
-  const [selectedTone, setSelectedTone] = useState("Poetic");
-  const [imageDescription, setImageDescription] = useState("");
 
   const tonePrompts = {
     Funny:
@@ -40,19 +39,28 @@ const CreatePost = ({ open, setOpen }) => {
       "Generate a deeply emotional Instagram caption that evokes feelings. Max 30 words. Include 1–2 heart-touching emojis and 1–2 relevant hashtags.",
   };
 
-  // Initialize Gemini AI
   const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
-  // Generate AI caption with tone & optional description
+  // Handle image upload + preview
+  const fileChangeHandler = async (e) => {
+    const selectedFile = e.target.files?.[0];
+    if (!selectedFile) return;
+
+    setFile(selectedFile);
+    const previewDataURL = await readFileAsDataURL(selectedFile);
+    setImagePreview(previewDataURL);
+  };
+
+  // Generate AI caption using Gemini AI
   const generateAICaption = async () => {
     if (selectedTone === "Informative" && !imageDescription.trim()) {
       toast.error("Please describe the image for informative captions.");
       return;
     }
 
-    try {
-      setAiLoading(true);
+    setAiLoading(true);
 
+    try {
       const model = genAI.getGenerativeModel({
         model: "models/gemini-2.0-flash",
       });
@@ -63,13 +71,21 @@ const CreatePost = ({ open, setOpen }) => {
       }
 
       const result = await model.generateContent([prompt]);
-      const aiCaption = result.response?.text()?.trim();
+
+      // Extract caption text from result
+      let aiCaption = null;
+
+      if (typeof result.response?.text === "function") {
+        aiCaption = await result.response.text();
+      } else if (result.response?.candidates?.length > 0) {
+        aiCaption = result.response.candidates[0].content;
+      }
 
       if (aiCaption) {
-        setCaption(aiCaption);
-        toast.success("AI Caption Generated!");
+        setCaption(aiCaption.trim());
+        toast.success("AI Caption generated!");
       } else {
-        throw new Error("No caption returned");
+        throw new Error("No caption returned from AI");
       }
     } catch (error) {
       console.error("AI Caption Error:", error);
@@ -79,19 +95,7 @@ const CreatePost = ({ open, setOpen }) => {
     }
   };
 
-  // Handle image file upload
-  const fileChangeHandler = async (e) => {
-    const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      setFile(selectedFile);
-      const preview = await readFileAsDataURL(selectedFile);
-      setImagePreview(preview);
-      // Automatically generate caption after upload if not informative
-      if (selectedTone !== "Informative") generateAICaption();
-    }
-  };
-
-  // Post creation handler
+  // Create post handler
   const createPostHandler = async () => {
     if (!caption.trim()) {
       toast.error("Caption cannot be empty");
@@ -102,8 +106,8 @@ const CreatePost = ({ open, setOpen }) => {
     formData.append("caption", caption);
     if (file) formData.append("image", file);
 
+    setLoading(true);
     try {
-      setLoading(true);
       const res = await axios.post(`${Post_API}/addpost`, formData, {
         withCredentials: true,
         headers: { "Content-Type": "multipart/form-data" },
@@ -113,15 +117,16 @@ const CreatePost = ({ open, setOpen }) => {
         dispatch(setPosts([res.data.post, ...posts]));
         toast.success(res.data.message);
         setOpen(false);
+        // Reset all fields
+        setCaption("");
+        setFile(null);
+        setImagePreview("");
+        setImageDescription("");
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Post failed");
+      toast.error(error.response?.data?.message || "Post creation failed");
     } finally {
       setLoading(false);
-      setCaption("");
-      setFile(null);
-      setImagePreview("");
-      setImageDescription("");
     }
   };
 
@@ -132,17 +137,13 @@ const CreatePost = ({ open, setOpen }) => {
         className="max-h-[80vh] overflow-y-auto mx-auto"
         style={{ minWidth: "320px" }}
       >
-        <DialogHeader className="text-center font-semibold">
-          Create Post
-        </DialogHeader>
+        <DialogHeader className="text-center font-semibold">Create Post</DialogHeader>
 
         {/* User Info */}
         <div className="flex items-center gap-3 mb-3">
           <Avatar>
-            <AvatarImage src={user?.profilePicture} alt="" />
-            <AvatarFallback>
-              {user?.username?.charAt(0)?.toUpperCase() || "U"}
-            </AvatarFallback>
+            <AvatarImage src={user?.profilePicture} alt={user?.username} />
+            <AvatarFallback>{user?.username?.charAt(0).toUpperCase() || "U"}</AvatarFallback>
           </Avatar>
           <div>
             <h1 className="font-semibold text-xs">{user?.username}</h1>
@@ -163,95 +164,86 @@ const CreatePost = ({ open, setOpen }) => {
               </option>
             ))}
           </select>
-
-          {selectedTone === "Informative" && (
-            <div className="mt-2">
-              <label className="text-sm font-medium">Describe the image</label>
-              <Textarea
-                value={imageDescription}
-                onChange={(e) => setImageDescription(e.target.value)}
-                placeholder="Describe your image..."
-                rows={3}
-                className="mt-1"
-              />
-              <Button
-                onClick={generateAICaption}
-                disabled={aiLoading || !imageDescription.trim()}
-                className="mt-2"
-              >
-                {aiLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />{" "}
-                    Generating...
-                  </>
-                ) : (
-                  "Generate Caption"
-                )}
-              </Button>
-            </div>
-          )}
         </div>
 
-        {/* Caption Textarea */}
-        {selectedTone !== "Informative" && (
-          <>
+        {/* Image Description (only for Informative) */}
+        {selectedTone === "Informative" && (
+          <div className="mb-3">
+            <label className="text-sm font-medium">Describe the image</label>
             <Textarea
-              value={caption}
-              onChange={(e) => setCaption(e.target.value)}
-              placeholder="Write a caption..."
-              className="focus-visible:ring-transparent border-none mb-3"
-              rows={5}
-            />
-            <Button onClick={generateAICaption} disabled={aiLoading}>
-              {aiLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />{" "}
-                  Generating...
-                </>
-              ) : (
-                "Generate AI Caption"
-              )}
-            </Button>
-          </>
-        )}
-
-        {/* Image Preview */}
-        {imagePreview && (
-          <div className="w-full h-64 flex items-center justify-center bg-gray-100 rounded-md overflow-hidden mt-4 mb-4">
-            <img
-              src={imagePreview}
-              alt="preview_img"
-              className="h-full w-full object-contain"
+              value={imageDescription}
+              onChange={(e) => setImageDescription(e.target.value)}
+              placeholder="Describe your image..."
+              rows={3}
+              className="mt-1"
             />
           </div>
         )}
 
-        {/* Image Upload */}
+        {/* Caption Textarea (always visible) */}
+        <Textarea
+          value={caption}
+          onChange={(e) => setCaption(e.target.value)}
+          placeholder="Write a caption..."
+          rows={5}
+          className="focus-visible:ring-transparent border-none mb-3"
+        />
+
+        {/* Generate AI Caption Button */}
+        <Button
+          onClick={generateAICaption}
+          disabled={aiLoading || (selectedTone === "Informative" && !imageDescription.trim())}
+        >
+          {aiLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Generating...
+            </>
+          ) : (
+            "Generate AI Caption"
+          )}
+        </Button>
+
+        {/* Image Preview */}
+        {imagePreview && (
+          <div className="w-full h-64 flex items-center justify-center bg-gray-100 rounded-md overflow-hidden mt-4 mb-4">
+            <img src={imagePreview} alt="preview" className="h-full w-full object-contain" />
+          </div>
+        )}
+
+        {/* Hidden Image Input */}
         <input
           ref={imageRef}
           type="file"
           className="hidden"
+          accept="image/*"
           onChange={fileChangeHandler}
         />
-        <Link
+
+        {/* Upload Image Button */}
+        <Button
+          variant="link"
           onClick={() => imageRef.current.click()}
           className="w-fit mx-auto text-black hover:text-blue-500 transition-colors duration-200"
         >
           Upload Image
-        </Link>
+        </Button>
 
         {/* Post Button */}
-        {imagePreview &&
-          (loading ? (
-            <Button disabled className="w-full mt-4">
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Please wait
-            </Button>
-          ) : (
-            <Button onClick={createPostHandler} className="w-full mt-4">
-              Post
-            </Button>
-          ))}
+        {imagePreview && (
+          <>
+            {loading ? (
+              <Button disabled className="w-full mt-4">
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Please wait
+              </Button>
+            ) : (
+              <Button onClick={createPostHandler} className="w-full mt-4">
+                Post
+              </Button>
+            )}
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );
