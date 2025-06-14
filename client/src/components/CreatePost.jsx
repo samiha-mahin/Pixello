@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { GoogleGenerativeAI } from "@google/generative-ai"; // Ensure this is installed: npm install @google/generative-ai
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const CreatePost = ({ open, setOpen }) => {
   const imageRef = useRef();
@@ -27,37 +27,39 @@ const CreatePost = ({ open, setOpen }) => {
   // Initialize Google GenAI client
   // The baseUrl is the default, but explicitly setting it helps confirm it's not the issue.
   // The core problem usually lies with the API_KEY itself or the Google Cloud Project configuration.
-  const ai = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY, {
-    baseUrl: "https://generativelanguage.googleapis.com"
-  });
+  // Initialize the Gemini client
+const ai = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
+// Generate AI caption using a valid model and method
   const generateAICaption = async () => {
-    try {
-      setAiLoading(true);
+  try {
+    setAiLoading(true);
 
-      // This is the correct way to specify gemini-pro.
-      // The 404 indicates a problem outside this code line.
-      const model = ai.getGenerativeModel({ model: "gemini-pro" });
+    const model = ai.getGenerativeModel({
+      model: "models/gemini-2.0-flash" // this is the correct format
+    });
 
-      const result = await model.generateContent([
-        "Suggest a fun, catchy, creative caption for an Instagram photo."
-      ]);
+    const result = await model.generateContent([
+      "Suggest a fun, catchy, creative caption for an Instagram photo."
+    ]);
 
-      const aiCaption = result.response?.text();
+    const aiCaption = result.response?.text()?.trim();
 
-      if (aiCaption) {
-        setCaption(aiCaption.trim());
-        toast.success("AI Caption Generated!");
-      } else {
-        throw new Error("No caption returned");
-      }
-    } catch (err) {
-      console.error("AI Caption Error:", err);
-      toast.error("Failed to generate caption");
-    } finally {
-      setAiLoading(false);
+    if (aiCaption) {
+      setCaption(aiCaption);
+      toast.success("AI Caption Generated!");
+    } else {
+      throw new Error("No caption returned");
     }
-  };
+  } catch (err) {
+    console.error("AI Caption Error:", err);
+    toast.error("Failed to generate caption");
+  } finally {
+    setAiLoading(false);
+  }
+};
+
+
 
 
   const fileChangeHandler = async (e) => {
