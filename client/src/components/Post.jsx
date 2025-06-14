@@ -10,12 +10,24 @@ import {
 } from "lucide-react";
 import { Button } from "./ui/button";
 import CommentDialog from "./CommentDialog";
+import { useSelector } from "react-redux";
 
 const Post = () => {
-
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [text, setText] = useState("");
-    const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false);
+  const { user } = useSelector((store)=> store.auth);
+  const { posts } = useSelector((store)=> store.post);
+
+
+  const changeEventHandler = (e) => {
+    const inputText = e.target.value;
+    if(inputText.trim()){
+      setText(inputText);
+    } else {
+      setText("");
+    }
+  }
 
   return (
     <div className="my-6 px-4 w-full max-w-md md:max-w-lg lg:max-w-xl mx-auto">
