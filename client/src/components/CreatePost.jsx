@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const CreatePost = ({ open, setOpen }) => {
   const imageRef = useRef();
@@ -20,63 +20,57 @@ const CreatePost = ({ open, setOpen }) => {
   const [imagePreview, setImagePreview] = useState("");
   const [loading, setLoading] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
+
   const { user } = useSelector(store => store.auth);
   const { posts } = useSelector(store => store.post);
   const dispatch = useDispatch();
 
-  // Initialize Google GenAI client
-  // The baseUrl is the default, but explicitly setting it helps confirm it's not the issue.
-  // The core problem usually lies with the API_KEY itself or the Google Cloud Project configuration.
-  // Initialize the Gemini client
-const ai = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
+  // Initialize Gemini
+  const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
-// Generate AI caption using a valid model and method
+  // AI Caption Generator
   const generateAICaption = async () => {
-  try {
-    setAiLoading(true);
+    try {
+      setAiLoading(true);
+      const model = genAI.getGenerativeModel({ model: "models/gemini-2.0-flash" });
 
-    const model = ai.getGenerativeModel({
-      model: "models/gemini-2.0-flash" // this is the correct format
-    });
+      const result = await model.generateContent([
+        "Always generate William Shakespeare style quote. Limit the caption to 30 words max. Include 1–2 relevant emojis and 1–2 hashtags."
+      ]);
 
-    const result = await model.generateContent([
-      "Suggest a fun, catchy, creative caption for an Instagram photo."
-    ]);
+      const aiCaption = result.response?.text()?.trim();
 
-    const aiCaption = result.response?.text()?.trim();
-
-    if (aiCaption) {
-      setCaption(aiCaption);
-      toast.success("AI Caption Generated!");
-    } else {
-      throw new Error("No caption returned");
-    }
-  } catch (err) {
-    console.error("AI Caption Error:", err);
-    toast.error("Failed to generate caption");
-  } finally {
-    setAiLoading(false);
-  }
-};
-
-
-
-
-  const fileChangeHandler = async (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setFile(file);
-      const dataUrl = await readFileAsDataURL(file);
-      setImagePreview(dataUrl);
-      // Trigger AI caption generation when an image is selected
-      generateAICaption();
+      if (aiCaption) {
+        setCaption(aiCaption);
+        toast.success("AI Caption Generated!");
+      } else {
+        throw new Error("No caption returned");
+      }
+    } catch (err) {
+      console.error("AI Caption Error:", err);
+      toast.error("Failed to generate caption");
+    } finally {
+      setAiLoading(false);
     }
   };
 
-  const createPostHandler = async (e) => {
+  // Handle Image Upload
+  const fileChangeHandler = async (e) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+      const preview = await readFileAsDataURL(selectedFile);
+      setImagePreview(preview);
+      generateAICaption(); // Trigger AI caption generation
+    }
+  };
+
+  // Post Creation Handler
+  const createPostHandler = async () => {
     const formData = new FormData();
     formData.append("caption", caption);
-    if (imagePreview) formData.append("image", file);
+    if (file) formData.append("image", file);
+
     try {
       setLoading(true);
       const res = await axios.post(`${Post_API}/addpost`, formData, {
@@ -85,6 +79,7 @@ const ai = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
           "Content-Type": "multipart/form-data"
         }
       });
+
       if (res.data.success) {
         dispatch(setPosts([res.data.post, ...posts]));
         toast.success(res.data.message);
@@ -103,16 +98,18 @@ const ai = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
   return (
     <Dialog open={open}>
       <DialogContent onInteractOutside={() => setOpen(false)}>
-        <DialogHeader className="text-centre font-semibold">Create Post</DialogHeader>
+        <DialogHeader className="text-center font-semibold">Create Post</DialogHeader>
+
         <div className='flex items-center gap-3'>
           <Avatar>
             <AvatarImage src={user?.profilePicture} alt='' />
-            <AvatarFallback>CN</AvatarFallback>
+            <AvatarFallback>{user?.username?.charAt(0)?.toUpperCase() || "U"}</AvatarFallback>
           </Avatar>
           <div>
             <h1 className='font-semibold text-xs'>{user?.username}</h1>
           </div>
         </div>
+
         <Textarea
           value={caption}
           onChange={(e) => setCaption(e.target.value)}
@@ -120,6 +117,7 @@ const ai = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
           className='focus-visible:ring-transparent border-none'
           rows={5}
         />
+
         {aiLoading && (
           <p className='text-sm text-blue-500 mt-1'>Generating caption...</p>
         )}
@@ -130,17 +128,27 @@ const ai = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
           </div>
         )}
 
-        <input ref={imageRef} type='file' className='hidden' onChange={fileChangeHandler} />
-        <Link onClick={() => imageRef.current.click()} className='w-fit mx-auto text-black hover:text-blue-500 transition-colors duration-200'>Upload</Link>
+        <input
+          ref={imageRef}
+          type='file'
+          className='hidden'
+          onChange={fileChangeHandler}
+        />
+        <Link
+          onClick={() => imageRef.current.click()}
+          className='w-fit mx-auto text-black hover:text-blue-500 transition-colors duration-200'
+        >
+          Upload
+        </Link>
 
         {imagePreview && (
           loading ? (
-            <Button>
+            <Button disabled>
               <Loader2 className='mr-2 h-4 w-4 animate-spin' />
               Please wait
             </Button>
           ) : (
-            <Button onClick={createPostHandler} type="submit" className="w-full">Post</Button>
+            <Button onClick={createPostHandler} className="w-full">Post</Button>
           )
         )}
       </DialogContent>
