@@ -35,7 +35,7 @@ const CreatePost = ({ open, setOpen }) => {
       const model = genAI.getGenerativeModel({ model: "models/gemini-2.0-flash" });
 
       const result = await model.generateContent([
-        "Always generate William Shakespeare style quote. Limit the caption to 30 words max. Include 1–2 relevant emojis and 1–2 hashtags."
+        "Always generate William Shakespeare or Franz Kafka style quote for the caption. Limit the caption to 30 words max. Include 1–2 deep poetic emojis and 1–2 relavent hashtags."
       ]);
 
       const aiCaption = result.response?.text()?.trim();
