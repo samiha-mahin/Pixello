@@ -10,14 +10,20 @@ import {
 } from "lucide-react";
 import { Button } from "./ui/button";
 import CommentDialog from "./CommentDialog";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import axios from "axios";
+import { Post_API } from "@/utils/constant";
 
-const Post = () => {
+const Post = ({post}) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [text, setText] = useState("");
   const [open, setOpen] = useState(false);
   const { user } = useSelector((store)=> store.auth);
   const { posts } = useSelector((store)=> store.post);
+  const [liked, setLiked] = useState(post.likes.includes(user?._id) || false);
+  const [postLike, setPostLike] = useState(post.likes.length);
+  const [comment, setComment] = useState(post.comments);
+  const dispatch = useDispatch();
 
 
   const changeEventHandler = (e) => {
@@ -26,6 +32,22 @@ const Post = () => {
       setText(inputText);
     } else {
       setText("");
+    }
+  }
+
+  const likeOrDislikeHandler = async() =>{
+    try {
+      const action = liked ? 'dislike' : 'like' ;
+      const res = await axios.get(`${Post_API}/${post._id}/${action}`, {withCredentials:true});
+      console.log(res.data);
+      if(res.data.success){
+        const updatedLikes = liked? postLike - 1 : postLike + 1; //If liked is true, then the user is removing the like → so subtract 1.If liked is false, then the user is adding a like → so add 1.
+        setPostLike(updatedLikes);
+        setLiked(!liked);
+      }
+      // Update the post in the Redux store
+    } catch (error) {
+      
     }
   }
 
