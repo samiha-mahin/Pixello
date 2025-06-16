@@ -3,16 +3,18 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog";
 import {
   Bookmark,
-  Heart,
   MessageCircle,
   MoreHorizontal,
   Send,
 } from "lucide-react";
+import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { Button } from "./ui/button";
 import CommentDialog from "./CommentDialog";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { Post_API } from "@/utils/constant";
+import { setPosts } from "@/redux/postSlice";
+import { toast } from "sonner";
 
 const Post = ({post}) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -46,8 +48,16 @@ const Post = ({post}) => {
         setLiked(!liked);
       }
       // Update the post in the Redux store
+      const updatedPostData = posts.map(p =>
+        p._id === post._id ? {
+          ...p,
+          likes: liked ? p.likes.filter(id => id !== user._id) : [...p.likes, user._id]
+        } : p
+      ); //p is just a local variable that represents each individual post in the array during mapping.
+      dispatch(setPosts(updatedPostData));
+      toast.success(res.data.message);
     } catch (error) {
-      
+       console.log(error);
     }
   }
 
@@ -58,12 +68,12 @@ const Post = ({post}) => {
         <div className="flex items-center gap-3">
           <Avatar className="w-10 h-10">
             <AvatarImage
-              src="https://vz.cnwimg.com/wp-content/uploads/2023/12/Mikey-Madison.jpg?x95892"
+              src={post.author?.profilePicture}
               alt="profile"
             />
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
-          <h1 className="text-sm sm:text-base font-medium">Mikey Maddison</h1>
+          <h1 className="text-sm sm:text-base font-medium">{post.author?.username}</h1>
         </div>
 
         {/* Dialog for actions */}
@@ -93,12 +103,24 @@ const Post = ({post}) => {
       {/* Post Image */}
       <img
         className="rounded-md my-3 w-full aspect-square object-cover"
-        src="https://www.nme.com/wp-content/uploads/2024/10/Mikey-Madison-2024.jpg"
+        src={post.image}
         alt="post"
       />
       <div className="flex items-center justify-between my-2">
         <div className="flex items-center gap-5">
-          <Heart className="cursor-pointer hover:text-gray-600" />
+          {
+            liked ? (
+              <FaHeart
+                className="text-red-500 cursor-pointer hover:text-red-600"
+                size={'24'}
+                onClick={likeOrDislikeHandler}
+              />
+            ) : <FaRegHeart
+                className="cursor-pointer hover:text-gray-600"
+                size={'22px'}
+                onClick={likeOrDislikeHandler}
+              />
+          }
           <MessageCircle className="cursor-pointer hover:text-gray-600" />
           <Send className="cursor-pointer hover:text-gray-600" />
         </div>
