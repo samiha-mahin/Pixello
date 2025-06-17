@@ -13,8 +13,9 @@ import CommentDialog from "./CommentDialog";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { Post_API } from "@/utils/constant";
-import { setPosts } from "@/redux/postSlice";
+import { setPosts, setSelectedPost } from "@/redux/postSlice";
 import { toast } from "sonner";
+import { Badge } from "./ui/badge";
 
 const Post = ({post}) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -61,6 +62,31 @@ const Post = ({post}) => {
     }
   }
 
+  const commentHandler = async(e) => {
+    try {
+      const res = await axios.post(`${Post_API}/${post._id}/comment`,{text},{
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      console.log(res.data);
+      if(res.data.success){
+        const updatedCommentData = [...comment, res.data.comment];
+        setComment(updatedCommentData);
+
+        const updatedPostData = posts.map(p => p._id === post._id ? {
+          ...p, comments: updatedCommentData} : p
+        );
+        dispatch(setPosts(updatedPostData));
+        toast.success(res.data.message);
+        setText("");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   return (
     <div className="my-6 px-4 w-full max-w-md md:max-w-lg lg:max-w-xl mx-auto">
       {/* Top bar: Avatar and more menu */}
@@ -74,6 +100,7 @@ const Post = ({post}) => {
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
           <h1 className="text-sm sm:text-base font-medium">{post.author?.username}</h1>
+           {user?._id === post.author._id &&  <Badge variant="secondary">Author</Badge>}
         </div>
 
         {/* Dialog for actions */}
@@ -121,20 +148,28 @@ const Post = ({post}) => {
                 onClick={likeOrDislikeHandler}
               />
           }
-          <MessageCircle className="cursor-pointer hover:text-gray-600" />
+          <MessageCircle onClick={() =>{
+            dispatch(setSelectedPost(post));
+            setOpen(true);
+          }} className="cursor-pointer hover:text-gray-600"/>
           <Send className="cursor-pointer hover:text-gray-600" />
         </div>
         <Bookmark className="cursor-pointer hover:text-gray-600" />
       </div>
-      <span className="font-medium block mb-2">100 likes</span>
+      <span className="font-medium block mb-2">{postLike} likes</span>
       <p>
-        <span className="font-medium mr-2">mikey_mad</span>
-        caption
+        <span className="font-medium mr-2">{post.author?.username}</span>
+        {post.caption}
       </p>
-
-      <span className="cursor-pointer text-sm text-gray-400">
-        View all 20 comments
-      </span>
+      {
+        comment.length > 0 && (
+          <span onClick={()=>{
+            dispatch(setSelectedPost(post));
+            setOpen(true);
+          }} className="text-sm text-gray-400 cursor-pointer"
+          >View All {comment.length} comments</span>
+        )
+      }
 
       <CommentDialog open={open} setOpen={setOpen} />
       <div className="flex items-center justify-between">
@@ -146,7 +181,7 @@ const Post = ({post}) => {
         />
         {text && (
           <span
-            className="text-[#3BADF8] cursor-pointer"
+            onClick={commentHandler} className="text-[#3BADF8] cursor-pointer"
           >
             Post
           </span>
