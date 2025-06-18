@@ -1,5 +1,6 @@
 import {
   Bell,
+  Camera,
   Home,
   LogOut,
   MessageCircle,
@@ -9,7 +10,11 @@ import {
 } from "lucide-react";
 import React, { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import axios from "axios";
 import { USER_API } from "@/utils/constant";
@@ -25,7 +30,9 @@ const LeftSidebar = () => {
   const dispatch = useDispatch();
   const [open, setOpen] = useState(false);
   const { user } = useSelector((state) => state.auth);
-  const { likeNotification } = useSelector((state) => state.realTimeNotification);
+  const { likeNotification } = useSelector(
+    (state) => state.realTimeNotification
+  );
 
   const logoutHandler = async () => {
     try {
@@ -78,7 +85,7 @@ const LeftSidebar = () => {
     <>
       {/* Desktop Sidebar */}
       <div className="hidden md:block fixed top-0 left-0 w-[16%] h-screen bg-white border-r p-4">
-        <h1 className="my-8 font-bold text-xl">LOGO</h1>
+        <h1 className="my-8 font-bold text-2xl">Pixello</h1>
         <div className="flex flex-col gap-3">
           {sidebarItems.map((item, index) => {
             if (item.text === "Notifications") {
@@ -97,7 +104,9 @@ const LeftSidebar = () => {
                   </PopoverTrigger>
                   <PopoverContent className="w-64">
                     {likeNotification.length === 0 ? (
-                      <p className="text-sm text-center text-gray-500">No new notifications</p>
+                      <p className="text-sm text-center text-gray-500">
+                        No new notifications
+                      </p>
                     ) : (
                       likeNotification.map((notification) => (
                         <div
@@ -105,7 +114,9 @@ const LeftSidebar = () => {
                           className="flex items-center gap-2 my-2"
                         >
                           <Avatar>
-                            <AvatarImage src={notification.userDetails?.profilePicture} />
+                            <AvatarImage
+                              src={notification.userDetails?.profilePicture}
+                            />
                             <AvatarFallback>CN</AvatarFallback>
                           </Avatar>
                           <p className="text-sm">
@@ -137,9 +148,16 @@ const LeftSidebar = () => {
       </div>
 
       {/* Mobile Bottom Navbar */}
+      <div className="md:hidden w-full flex justify-center my-4">
+        <h1 className="font-bold text-2xl">Pixello</h1>
+      </div>
       <div className="md:hidden fixed bottom-0 w-full bg-white border-t flex justify-around items-center h-14 z-50">
         {sidebarItems.map((item, index) => {
-          if (item.text === "Messages" || item.text === "Explore" || item.text === "Logout")
+          if (
+            item.text === "Messages" ||
+            item.text === "Explore" ||
+            item.text === "Logout"
+          )
             return null;
 
           if (item.text === "Notifications") {
@@ -157,7 +175,9 @@ const LeftSidebar = () => {
                 </PopoverTrigger>
                 <PopoverContent className="w-64">
                   {likeNotification.length === 0 ? (
-                    <p className="text-sm text-gray-500 text-center">No new notifications</p>
+                    <p className="text-sm text-gray-500 text-center">
+                      No new notifications
+                    </p>
                   ) : (
                     likeNotification.map((notification) => (
                       <div
@@ -165,7 +185,9 @@ const LeftSidebar = () => {
                         className="flex items-center gap-2 my-2"
                       >
                         <Avatar>
-                          <AvatarImage src={notification.userDetails?.profilePicture} />
+                          <AvatarImage
+                            src={notification.userDetails?.profilePicture}
+                          />
                           <AvatarFallback>CN</AvatarFallback>
                         </Avatar>
                         <p className="text-sm">
