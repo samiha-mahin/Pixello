@@ -84,7 +84,7 @@ const LeftSidebar = () => {
   return (
     <>
       {/* Desktop Sidebar */}
-      <div className="hidden md:block fixed top-0 left-0 w-[16%] h-screen bg-white border-r p-4">
+      <div className="hidden md:block fixed top-0 left-0 w-[16%] z-50 h-screen bg-white border-r p-4">
         <h1 className="my-8 font-bold text-2xl">Pixello</h1>
         <div className="flex flex-col gap-3">
           {sidebarItems.map((item, index) => {

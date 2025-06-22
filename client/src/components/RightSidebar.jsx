@@ -8,7 +8,6 @@ const RightSidebar = () => {
 
   return (
     <>
-      
       {/* Mobile Button + Dialog */}
       <div className="fixed bottom-4 right-4 md:hidden z-50">
         <Dialog open={open} onOpenChange={setOpen}>
