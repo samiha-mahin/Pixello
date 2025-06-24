@@ -16,7 +16,7 @@ const Home = () => {
       {/* Menu Button */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <button className="md:hidden absolute top-4 right-4 z-50 p-1 ">
+          <button className="md:hidden absolute top-4 right-4 z-50 p-1 cursor-pointer ">
             <Menu />
           </button>
         </DialogTrigger>
