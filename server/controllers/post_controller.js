@@ -64,6 +64,10 @@ export const getAllPost = async (req, res) => {
                     select: 'username profilePicture'
                 } // populate author of comments
             });
+            return res.status(200).json({
+                 posts,
+                 success: true,
+            });
     } catch (error) {
         return res.status(500).json({
             message: "getAllPost failed.",

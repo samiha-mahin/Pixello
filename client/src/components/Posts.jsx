@@ -1,8 +1,10 @@
 import React from 'react'
 import Post from './Post'
 import { useSelector } from 'react-redux'
+import useGetAllPost from '@/hooks/useGetAllPost'
 
 const Posts = () => {
+  useGetAllPost();
   const{posts} = useSelector(store => store.post)
   return (
     <div>
