@@ -49,7 +49,7 @@ Pixello uses **Gemini AI** to enhance user experience:
 ### 1. Clone the Repo
 
 ```bash
-git clone https://github.com/yourusername/pixello.git
+https://github.com/samiha-mahin/Pixello.git
 cd pixello
 ```
 
@@ -58,13 +58,14 @@ cd pixello
 #### `client/.env`
 
 ```env
-VITE_API_BASE_URL=http://localhost:5000
+GEMINI_API_KEY=your_gemini_api_key
 ```
 
 #### `server/.env`
 
 ```env
 MONGO_URI=your_mongo_uri
+PORT=http: 5000
 JWT_SECRET=your_secret
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_key
@@ -129,11 +130,5 @@ Licensed under the MIT License.
 
 ---
 
-Let me know if you want a **logo**, **GIF preview**, **Vercel deploy button**, or want me to add badges like:
 
-```
-![License](https://img.shields.io/badge/license-MIT-blue)
-![Built With](https://img.shields.io/badge/built%20with-MERN-green)
-![AI-Powered](https://img.shields.io/badge/AI-Gemini-brightgreen)
-```
 
